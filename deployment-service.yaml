@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: generated-yaml
+  labels:
+    app: generated-yaml
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: generated-yaml
+  template:
+    metadata:
+      labels:
+        app: generated-yaml
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
+      volumes:
+        - name: html-volume
+          configMap:
+            name: html
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: generated-yaml-service
+  labels:
+    name: generated-yaml-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: 'generated-yaml'
+  type: ClusterIP
+  

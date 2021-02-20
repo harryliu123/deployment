@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css" />
+    <script src="jquery-3.1.1.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="vue.js"></script>
+	<script src="js-yaml.min.js"></script>
+    <title>Kubernetes Deployment Builder</title>
+</head>
+
+<body>
+<div id="app">
+    <div class="col-md-6 col-lg-6 col-sm-12">
+        <h3>Kubernetes Deployment Builder</h3>
+        <div id="app">
+            <div class="form-group">
+                <label for="txtDockerImageName">Docker Image Name:</label>
+                <input type="text" class="form-control" id="txtDockerImageName" name="txtDockerImageName" v-model="DockerImageName" />
+				Examples:
+				<pre>
+busybox
+nginx
+busybox:latest
+gcr.io/your-project-id/your-namespace/your-image:latest
+				</pre>
+            </div>
+			<div class="form-group">
+                <label for="txtContainerCommand">Container Command:</label>
+                <input type="text" class="form-control" id="txtContainerCommand" name="txtContainerCommand" placeholder="Docker command for container, if any" v-model="ContainerCommand" />
+            </div>
+			<div class="form-group">
+                <label for="txtContainerArgs">Container Args:</label>
+                <input type="text" class="form-control" id="txtContainerArgs" name="txtContainerArgs" placeholder="Docker args for container, if any" v-model="ContainerArgs" />
+            </div>
+			<div class="form-group">
+                <label for="txtDeploymentNameOverride">Deployment Name:</label>
+                <input type="text" class="form-control" id="txtDeploymentNameOverride" name="txtDeploymentNameOverride" v-bind:placeholder="DeploymentName" v-model="DeploymentNameOverride" />
+            </div>
+			<div class="form-group">
+                <label for="txtnamespace">Namespace:</label>
+                <input type="text" class="form-control" id="txtnamespace" name="txtnamespace" placeholder="請填入Namespace名稱, 預設值為 default" v-model="namespace" />
+            </div>
+			<div class="form-group">
+                <label for="txtCPU">CPU:</label>
+                <input type="text" class="form-control" id="txtCPU" name="txtCPU" placeholder="Container 使用的CPU量, 例如1/5顆CPU, 輸入 200m" v-model="CPU" />
+            </div>
+			<div class="form-group">
+                <label for="txtmemory">memory:</label>
+                <input type="text" class="form-control" id="txtmemory" name="txtmemory" placeholder="Container 使用的memory量, 例如: 256Mi" v-model="memory" />
+            </div>			
+			<div class="form-group">
+                <label for="txtContainerNameoverride">Container Name:</label>
+                <input type="text" class="form-control" id="txtContainerNameoverride" name="txtContainerNameoverride" v-bind:placeholder="ContainerName" v-model="ContainerNameOverride" />
+            </div>
+			<div class="form-group">
+                <label for="txtAppLabelOverride">App Label:</label>
+                <input type="text" class="form-control" id="txtAppLabelOverride" name="txtAppLabelOverride" v-bind:placeholder="AppLabel" v-model="AppLabelOverride" />
+            </div>
+			<div class="form-group">
+                <label for="txtReplicas">Replicas:</label>
+                <input type="text" class="form-control" id="txtReplicas" name="txtReplicas" v-model="Replicas" />
+            </div>
+			<div class="form-group">
+                <label for="txtmountPath">mountPath:</label>
+                <input type="text" class="form-control" id="txtmountPath" name="txtmountPath" placeholder="例如: /data" v-model="mountPath" />
+            </div>
+			<div class="form-group">
+                <label for="txt">livenessProbe,用於服務的instance是否活著</label>
+				</br>
+                <label for="txtlivenessProbePath">livenessProbePath:</label>
+                <input type="text" class="form-control" id="txtlivenessProbePath" name="txtlivenessProbePath" placeholder="請填入healthz路徑, 例如: /healthz" v-model="livenessProbePath" />
+            </div>
+			<div class="form-group">
+                <label for="txtlivenessProbePort">livenessProbePort:</label>
+                <input type="text" class="form-control" id="txtlivenessProbePort" name="txtlivenessProbePort" placeholder="請填入healthz路徑的開放port, 例如: 8080" v-model="livenessProbePort" />
+            </div>			
+			<div class="form-group">
+                <label for="txt">readinessProbe,用於服務的是否有回應</label>
+				</br>
+                <label for="txtreadinessProbePath">readinessProbePath:</label>
+                <input type="text" class="form-control" id="txtreadinessProbePath" name="txtreadinessProbePath" placeholder="請填入healthz路徑, 例如: /healthz" v-model="readinessProbePath" />
+            </div>
+			<div class="form-group">
+                <label for="txtreadinessProbePort">readinessProbePort:</label>
+                <input type="text" class="form-control" id="txtreadinessProbePort" name="txtreadinessProbePort" placeholder="請填入healthz路徑的開放port, 例如: 8080" v-model="readinessProbePort" />
+            </div>
+
+			<div class="form-group">
+                <label for="txt">startupProbe,用於pods起來時先由startupProbe確認完成後才交由readinessProbe或livenessProbe 接管</label>
+				</br>
+                <label for="txtstartupProbePath">startupProbePath:</label>
+                <input type="text" class="form-control" id="txtstartupProbePath" name="txtstartupProbePath" placeholder="請填入healthz路徑, 例如: /healthz" v-model="startupProbePath" />
+            </div>		
+			<div class="form-group">
+                <label for="txtstartupProbePort">startupProbePort:</label>
+                <input type="text" class="form-control" id="txtstartupProbePort" name="txtstartupProbePort" placeholder="請填入healthz路徑的開放port, 例如: 8080" v-model="startupProbePort" />
+            </div>		
+			<div class="form-group">
+				<label for="txtIngress">Ingress URL:</label>
+				<input type="text" class="form-control" id="txtIngress" name="txtIngress" placeholder="如果是選擇 ClusterIP, 需要外部連入 請填入外部的URL" v-model="IngressURL" />
+			</div>
+			
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4>Ports</h4>
+				</div>
+				<div class="panel-body">
+					<div>Add container ports, and optionally specify if any ports should be exposed via a service. (Will add additonal service configuration to YAML template.)</div>
+					<button class="btn btn-primary" v-on:click="addPort"><span class="glyphicon glyphicon-plus"></span> Add Port</button>
+					<div>&nbsp;</div>
+					<div v-for="port in Ports">
+						<div class="panel panel-primary">
+							<div class="panel-body">
+								<div class="row">
+									<div class="col-lg-6 col-sm-6 col-md-6">
+										<div class="input-group">
+										  <span class="input-group-addon" style=" padding:0 15px;"><button v-on:click="deletePort(port)"><span class="glyphicon glyphicon-trash"></span></button> Container Port</span>
+										  <input type="text" class="form-control" v-model="port.ContainerPort" />
+										</div>
+									</div>
+									<div class="col-lg-6 col-md-6 col-sm-6" style="margin-top: 5px;">
+										<input type="checkbox" v-model="port.ExposeViaService" /> Expose Service Port
+									</div>
+                                    <div class="clearfix">&nbsp;</div>
+										<div class="col-lg-6 col-md-6 col-sm-6" v-show="port.ExposeViaService">
+										<div class="input-group">
+											<span class="input-group-addon">
+												Exposed Port Number
+											</span>
+											<input type="text" class="form-control" v-model="port.ServicePort" placeholder="port #" style="min-width: 50px;" />
+										</div>
+</div>
+									<div class="col-lg-6 col-md-6 col-sm-6" v-show="port.ExposeViaService">
+
+										<div class="input-group">
+											<span class="input-group-addon">Port Name</span>
+											<input type="text" class="form-control" v-model="port.ServicePortName" placeholder="Port Name (optional)" />
+										</div>
+                                        
+                                        </div>
+									<div class="col-lg-6 col-md-6 col-sm-6" style=" margin-top:10px;" v-show="port.ExposeViaService">
+										<div>
+											<label for="selProtocol">Protocol</label>
+											<select class="form-control" name="selProtocol" ID="selProtocol" v-model="port.ServicePortProtocol" style="min-width: 100px;">
+												<option value="TCP">TCP</option>
+												<option value="UDP">UDP</option>
+											</select>
+										</div>
+										
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-primary" v-if="HasOneOrMoreServicePorts">
+				<div class="panel-heading">
+					<h4>Service Information</h4>
+				</div>
+				<div class="panel-body">
+					<div class="form-group">
+						<label for="txtReplicas">Service Name:</label>
+						<input type="txtServiceNameOverride" class="form-control" id="txtServiceNameOverride" name="txtServiceNameOverride" v-model="ServiceNameOverride" v-bind:placeholder="ServiceName" />
+					</div>
+					<div class="form-group">
+						<label for="selServiceType">Service Type:</label>
+						<select class="form-control" name="selServiceType" ID="selServiceType" v-model="ServiceType" style="min-width: 100px;">
+							<option value="ClusterIP">Cluster IP</option>
+							<option value="NodePort">NodePort</option>
+							<option value="LoadBalancer">LoadBalancer</option>
+						</select>
+						<div v-if="ServiceType === 'ClusterIP'" class="alert alert-primary">
+							<strong>ClusterIP</strong> exposes the service on a cluster-internal IP. Choosing this value makes the service only reachable from within the cluster.
+						</div>
+						<div v-if="ServiceType === 'NodePort'" class="alert alert-primary">
+							<strong>NodePort</strong> exposes the service on each Node's IP on a high randomly chosen port. The port used to access the service will be generated in the 30000's range (i.e. port 31229).
+						</div>
+						<div v-if="ServiceType === 'LoadBalancer'" class="alert alert-primary">
+							<span class="label label-warning">Cloud Provider Only</span> <strong>LoadBalancer</strong> exposes the service externally using a cloud provider's load balancer.
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
+	<div class="col-md-6 col-lg-6 col-sm-12">
+<h4>Generated YAML</h4>
+<pre>
+{{NamespaceYaml}}
+---
+{{DeploymentYaml}}
+<template v-if="HasOneOrMoreServicePorts">---
+{{ServiceYaml}}
+
+
+</template>
+</pre>
+	</div>
+</div>
+
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#app',
+            data: {
+                DockerImageName: '',
+				ContainerCommand: '',
+				ContainerArgs: '',
+				DeploymentNameOverride: '',
+				ContainerNameOverride: '',
+				AppLabelOverride: '',
+				ServiceNameOverride: '',
+				Replicas: '1',
+				ServiceType: 'ClusterIP',
+				livenessProbePath: '',
+				livenessProbePort: '',
+				readinessProbePath: '',
+				readinessProbePort: '',
+				startupProbePath: '',
+				startupProbePort: '',
+				CPU: '',
+				memory: '',
+				namespace: '',
+				mountPath: '',
+				IngressURL: '',
+				Ingressclass: 'nginx', // kong
+				Ports: []
+            },
+            computed: {
+                DockerImageNameNoTag: function() {
+					var imageName = '';
+					imageName = this.DockerImageName;
+					
+					if (imageName.lastIndexOf('/') >= 0) {
+						imageName = imageName.substr(imageName.lastIndexOf('/')+1, imageName.length-1);
+					}
+					
+					if (imageName.indexOf(':') >= 0) {
+						imageName = imageName.substr(0, imageName.indexOf(':'));
+					}
+					
+                    return imageName;
+                },
+				DeploymentName: function() {
+					if (this.DeploymentNameOverride.length > 0) {
+						return this.DeploymentNameOverride;
+					}
+					return this.DockerImageNameNoTag;
+				},
+				ContainerName: function() {
+					if (this.ContainerNameOverride.length > 0) {
+						return this.ContainerNameOverride;
+					}
+					return this.DockerImageNameNoTag;
+				},
+				AppLabel: function() {
+					if (this.AppLabelOverride.length > 0) {
+						return this.AppLabelOverride;
+					}
+					return this.DockerImageNameNoTag;
+				},
+				ServiceName: function() {
+					if (this.ServiceNameOverride.length > 0) {
+						return this.ServiceNameOverride;
+					}
+					
+					if (this.DeploymentName.length === 0) {
+						return "unnamed-service";
+					}
+					
+					return this.DeploymentName + "-service";
+				},
+				ServicePorts: function() {
+					var portsWithServices = this.Ports.filter(function( port ) {
+						  return port.ExposeViaService === true;
+						});
+					return portsWithServices;
+				},
+				HasOneOrMoreServicePorts: function() {
+					return (this.ServicePorts.length > 0);
+				},
+				DeploymentYaml: function() {
+					var containerPorts = [];
+					for (var i = 0; i < this.Ports.length; i++) {
+						var portString = this.Ports[i].ContainerPort;
+						if ((portString%1)===0) {
+							containerPorts.push({
+								'containerPort': parseInt(portString)
+							});
+						}
+					}
+					var deploymentObj = {
+						'apiVersion': 'apps/v1',
+						'kind': 'Deployment',
+						'metadata': {
+						    'namespace':this.namespace,
+							'name': this.DeploymentName
+						},
+						'spec': {
+							'replicas': parseInt(this.Replicas),
+							'selector':{
+							    'matchLabels':{
+								    'app': this.AppLabel
+								}
+							},
+							
+							'template': {
+								'metadata': {
+									'labels': {
+										'app': this.AppLabel
+									} // end labels
+								}, // end metadata
+								'spec': {
+									'containers': [{
+										'name': this.ContainerName,
+										'image': this.DockerImageName,
+										'resources':{
+										    'limits':{
+										         'memory': this.memory,
+												 'cpu': this.CPU
+										   },
+										    'requests':{
+										         'memory': this.memory,
+												 'cpu': this.CPU
+										   }
+										},
+										'ports': containerPorts
+									}]
+								} // end spec
+							} // end template
+						} // end spec
+					} // end deploymentObj
+					
+					if (this.ContainerCommand.length > 0) {
+						deploymentObj.spec.template.spec.containers[0].command = [this.ContainerCommand];
+					}
+					
+					if (this.ContainerArgs.length > 0) {
+						deploymentObj.spec.template.spec.containers[0].args = [this.ContainerArgs];
+					}
+
+					if (this.livenessProbePath.length > 0 && this.livenessProbePort.length > 0 ) {
+						deploymentObj.spec.template.spec.containers[0].livenessProbe = [{
+						                                                                 'httpGet':[{
+																						     'path': this.livenessProbePath,
+																							 'port': this.livenessProbePort
+																						 }],
+																						 initialDelaySeconds: 3,
+																						 periodSeconds: 3
+						}];
+					}	
+					if (this.livenessProbePath.length == 0 && this.livenessProbePort.length > 0 ) {
+						deploymentObj.spec.template.spec.containers[0].livenessProbe = [{
+						                                                                 'tcpSocket':[{
+																							 'port': this.livenessProbePort
+																						 }],
+																						 initialDelaySeconds: 3,
+																						 periodSeconds: 3
+						}];
+					}	
+
+					if (this.readinessProbePath.length > 0 && this.readinessProbePort.length > 0 ) {
+						deploymentObj.spec.template.spec.containers[0].readinessProbe = [{
+						                                                                 'httpGet':[{
+																						     'path': this.readinessProbePath,
+																							 'port': this.readinessProbePort
+																						 }],
+																						 initialDelaySeconds: 3,
+																						 periodSeconds: 3
+						}];
+					}	
+
+					if (this.startupProbePath.length == 0 && this.startupProbePort.length > 0 ) {
+						deploymentObj.spec.template.spec.containers[0].startupProbe = [{
+						                                                                 'tcpSocket':[{
+																							 'port': this.startupProbePort
+																						 }],
+																						 failureThreshold: 30,
+																						 periodSeconds: 10
+						}];
+					}	
+					
+					if (this.startupProbePath.length > 0 && this.startupProbePort.length > 0 ) {
+						deploymentObj.spec.template.spec.containers[0].startupProbe = [{
+						                                                                 'httpGet':[{
+																						     'path': this.startupProbePath,
+																							 'port': this.startupProbePort
+																						 }],
+																						 failureThreshold: 30,
+																						 periodSeconds: 10
+						}];
+					}	
+
+					if (this.mountPath.length > 0 ) {
+						deploymentObj.spec.template.spec.containers[0].volumeMounts = [{
+						                                                                 'mountPath': this.mountPath,
+																						 'name': this.ContainerName + "-data"
+						}];
+					}	
+
+					if (this.mountPath.length > 0 ) {
+						deploymentObj.spec.template.spec.volumes = [{
+						                                                                 'name': this.ContainerName + "-data",
+																						  'persistentVolumeClaim': {
+																						    'claimName': this.ContainerName + "-data"
+																						  }
+						}];
+					}	
+
+					return jsyaml.dump(deploymentObj);
+				},
+				NamespaceYaml: function() {
+					var NamespaceObj = {
+						'apiVersion': 'v1',
+						'kind': 'Namespace',
+						'metadata': {
+							'name': this.namespace
+						}
+					}
+				    return jsyaml.dump(NamespaceObj);
+				},
+				IngressYaml: function() {
+					var ingressObj = {
+						'apiVersion': 'extensions/v1beta1',
+						'kind': 'Ingress',
+						'metadata': {
+							'name': "Ingress-" + this.ServiceName,
+							'namespace':this.namespace,
+							'annotations': {
+								'kubernetes.io/ingress.class': this.Ingressclass
+							}
+						},
+						'spec': {
+							'rules': [{
+								'host': this.IngressURL,
+								'http': {
+									'paths': [{
+										'backend':{
+											'serviceName': this.ServiceName,
+											'servicePort': port.ServicePort
+										}
+									}]
+								}
+							}]
+						}
+					}
+				    return jsyaml.dump(ingressObj);
+				},
+				ServiceYaml: function() {
+					var ports = [];
+					for (var i = 0; i < this.ServicePorts.length; i++) {						
+						var port = this.ServicePorts[i];
+						var servicePortObj = {
+							'port': parseInt(port.ServicePort),
+							'targetPort': parseInt(port.ContainerPort),
+							'protocol': port.ServicePortProtocol
+						};
+						if (port.ServicePortName.length > 0) {
+							servicePortObj.name = port.ServicePortName;
+						}
+						ports.push(servicePortObj);
+					}
+					
+					var serviceObj = {
+						'apiVersion': 'v1',
+						'kind': 'Service',
+						'metadata': {
+							'name': this.ServiceName,
+							'namespace':this.namespace,
+							'labels': {
+								'name': this.ServiceName
+							} // end labels
+						},
+						'spec': {
+							'ports': ports,
+							'selector': {
+								'app': this.AppLabel
+							},
+							'type': this.ServiceType
+						}, // end spec
+					} // end deploymentObj
+					return jsyaml.dump(serviceObj);
+				}
+            },
+			methods: {
+				addPort: function() {
+					var newPort = {
+						ContainerPort: '80',
+						ExposeViaService: false,
+						ServicePortName: '',
+						ServicePort: '80',
+						ServicePortProtocol: 'TCP'
+					};
+					
+					this.Ports.push(newPort);
+				},
+				deletePort: function(port) {
+					var portIndex = this.Ports.indexOf(port);
+					if (portIndex > -1) {
+						this.Ports.splice(portIndex, 1);
+					}
+				}
+			}
+        });
+    </script>
+</body>
+
+</html>
