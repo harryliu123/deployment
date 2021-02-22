@@ -327,11 +327,7 @@ gcr.io/your-project-id/your-namespace/your-image:latest
 												 'cpu': this.CPU
 										   }
 										},
-										'ports':[{
-											'name': http,
-											'containerPort': 80,
-											'hostPort': 80
-										}]
+										'ports': containerPorts
 									}]
 								} // end spec
 							} // end template
