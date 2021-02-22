@@ -343,55 +343,55 @@ gcr.io/your-project-id/your-namespace/your-image:latest
 					}
 
 					if (this.livenessProbePath.length > 0 && this.livenessProbePort.length > 0 ) {
-						deploymentObj.spec.template.spec.containers[0].livenessProbe = [{
+						deploymentObj.spec.template.spec.containers[0].livenessProbe = {
 						                                                                 'httpGet':{
 																						     'path': this.livenessProbePath,
 																							 'port': this.livenessProbePort
 																						 },
 																						 initialDelaySeconds: 3,
 																						 periodSeconds: 3
-						}];
+						};
 					}	
 					if (this.livenessProbePath.length == 0 && this.livenessProbePort.length > 0 ) {
-						deploymentObj.spec.template.spec.containers[0].livenessProbe = [{
+						deploymentObj.spec.template.spec.containers[0].livenessProbe = {
 						                                                                 'tcpSocket':{
 																							 'port': this.livenessProbePort
 																						 },
 																						 initialDelaySeconds: 3,
 																						 periodSeconds: 3
-						}];
+						};
 					}	
 
 					if (this.readinessProbePath.length > 0 && this.readinessProbePort.length > 0 ) {
-						deploymentObj.spec.template.spec.containers[0].readinessProbe = [{
+						deploymentObj.spec.template.spec.containers[0].readinessProbe = {
 						                                                                 'httpGet':{
 																						     'path': this.readinessProbePath,
 																							 'port': this.readinessProbePort
 																						 },
 																						 initialDelaySeconds: 3,
 																						 periodSeconds: 3
-						}];
+						};
 					}	
 
 					if (this.startupProbePath.length == 0 && this.startupProbePort.length > 0 ) {
-						deploymentObj.spec.template.spec.containers[0].startupProbe = [{
+						deploymentObj.spec.template.spec.containers[0].startupProbe = {
 						                                                                 'tcpSocket':{
 																							 'port': this.startupProbePort
 																						 },
 																						 failureThreshold: 30,
 																						 periodSeconds: 10
-						}];
+						};
 					}	
 					
 					if (this.startupProbePath.length > 0 && this.startupProbePort.length > 0 ) {
-						deploymentObj.spec.template.spec.containers[0].startupProbe = [{
+						deploymentObj.spec.template.spec.containers[0].startupProbe = {
 						                                                                 'httpGet':{
 																						     'path': this.startupProbePath,
 																							 'port': this.startupProbePort
 																						 },
 																						 failureThreshold: 30,
 																						 periodSeconds: 10
-						}];
+						};
 					}	
 
 					if (this.mountPath.length > 0 ) {
