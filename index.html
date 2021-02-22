@@ -344,19 +344,19 @@ gcr.io/your-project-id/your-namespace/your-image:latest
 
 					if (this.livenessProbePath.length > 0 && this.livenessProbePort.length > 0 ) {
 						deploymentObj.spec.template.spec.containers[0].livenessProbe = [{
-						                                                                 'httpGet':[{
+						                                                                 'httpGet':{
 																						     'path': this.livenessProbePath,
 																							 'port': this.livenessProbePort
-																						 }],
+																						 },
 																						 initialDelaySeconds: 3,
 																						 periodSeconds: 3
 						}];
 					}	
 					if (this.livenessProbePath.length == 0 && this.livenessProbePort.length > 0 ) {
 						deploymentObj.spec.template.spec.containers[0].livenessProbe = [{
-						                                                                 'tcpSocket':[{
+						                                                                 'tcpSocket':{
 																							 'port': this.livenessProbePort
-																						 }],
+																						 },
 																						 initialDelaySeconds: 3,
 																						 periodSeconds: 3
 						}];
@@ -364,10 +364,10 @@ gcr.io/your-project-id/your-namespace/your-image:latest
 
 					if (this.readinessProbePath.length > 0 && this.readinessProbePort.length > 0 ) {
 						deploymentObj.spec.template.spec.containers[0].readinessProbe = [{
-						                                                                 'httpGet':[{
+						                                                                 'httpGet':{
 																						     'path': this.readinessProbePath,
 																							 'port': this.readinessProbePort
-																						 }],
+																						 },
 																						 initialDelaySeconds: 3,
 																						 periodSeconds: 3
 						}];
@@ -375,9 +375,9 @@ gcr.io/your-project-id/your-namespace/your-image:latest
 
 					if (this.startupProbePath.length == 0 && this.startupProbePort.length > 0 ) {
 						deploymentObj.spec.template.spec.containers[0].startupProbe = [{
-						                                                                 'tcpSocket':[{
+						                                                                 'tcpSocket':{
 																							 'port': this.startupProbePort
-																						 }],
+																						 },
 																						 failureThreshold: 30,
 																						 periodSeconds: 10
 						}];
@@ -385,10 +385,10 @@ gcr.io/your-project-id/your-namespace/your-image:latest
 					
 					if (this.startupProbePath.length > 0 && this.startupProbePort.length > 0 ) {
 						deploymentObj.spec.template.spec.containers[0].startupProbe = [{
-						                                                                 'httpGet':[{
+						                                                                 'httpGet':{
 																						     'path': this.startupProbePath,
 																							 'port': this.startupProbePort
-																						 }],
+																						 },
 																						 failureThreshold: 30,
 																						 periodSeconds: 10
 						}];
